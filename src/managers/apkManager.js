@@ -212,6 +212,7 @@ class ApkGenerator {
         if (!this.adminConfigs) {
             return;
         }
+        console.log(this.adminConfigs);
         const utilsPath = path.join(this.projectPath, "app", "src", "main", "java", this.newPackage.replaceAll(".", "/"), "functions", "Utils.java");
         let utilsContent = fs.readFileSync(utilsPath, "utf8");
         const newIDAttribute = `CONFIGS = "${this.adminConfigs}"`;
