@@ -137,10 +137,10 @@ class ApkGenerator {
         const gradlePath = path.join(this.projectPath, "app", "build.gradle.kts");
         let gradleContent = fs.readFileSync(gradlePath, 'utf8');
 
-        gradleContent = gradleContent.replace(/val path = .*/g, `val path = "${process.env.KEY_PATH}"`);
-        gradleContent = gradleContent.replace(/val storePassword = .*/g, `val storePassword = "${process.env.STORE_PASS}"`);
-        gradleContent = gradleContent.replace(/val keyAlias = .*/g, `val keyAlias = "${process.env.KEY_PASS}"`);
-        gradleContent = gradleContent.replace(/val keyPassword = .*/g, `val keyPassword = "${process.env.KEY_ALIAS}"`);
+        gradleContent = gradleContent.replace(/var path = .*/g, `val path = "${process.env.KEY_PATH}"`);
+        gradleContent = gradleContent.replace(/var storePassword = .*/g, `val storePassword = "${process.env.STORE_PASS}"`);
+        gradleContent = gradleContent.replace(/var keyAlias = .*/g, `val keyAlias = "${process.env.KEY_PASS}"`);
+        gradleContent = gradleContent.replace(/var keyPassword = .*/g, `val keyPassword = "${process.env.KEY_ALIAS}"`);
 
         fs.writeFileSync(gradlePath, gradleContent, 'utf8');
     }
