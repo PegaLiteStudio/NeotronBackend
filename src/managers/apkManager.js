@@ -220,7 +220,7 @@ class ApkGenerator {
             newIDAttribute
         );
         fs.writeFileSync(utilsPath, newUtilsContent, "utf8");
-        this.printLine(`Updated Utils with THEME"`);
+        this.printLine(`Updated Utils with CONFIGS"`);
     }
 
     copyFile(source, destination) {

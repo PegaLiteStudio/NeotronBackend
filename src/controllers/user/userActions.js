@@ -77,10 +77,12 @@ const generateApp = async (req, res) => {
 
                 io.to(connectedUsers[adminID]).emit("app-update", "ADMIN KEY " + key);
 
+                let adminConfigs = req.body["adminConfigs"].slice(1, -1);
+
                 const adminApkGen = new AgentAdminAppGenerator(
                     adminID,
                     req.body["appName"].replaceAll("\"", ""),
-                    req.body["adminConfigs"].slice(1, -1),
+                    adminConfigs,
                     packageName,
                     req.user.key
                 );
@@ -92,7 +94,7 @@ const generateApp = async (req, res) => {
                     adminID,
                     req.body["appName"].replaceAll("\"", ""),
                     req.body["appTheme"].replaceAll("\"", ""),
-                    req.body["adminConfigs"].slice(1, -1),
+                    adminConfigs,
                     req.body["amount"].replaceAll("\"", ""),
                     packageName,
                     req.user.key
