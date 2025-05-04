@@ -136,10 +136,10 @@ class AgentAdminAppGenerator {
         const gradlePath = path.join(this.projectPath, "app", "build.gradle.kts");
         let gradleContent = fs.readFileSync(gradlePath, 'utf8');
 
-        gradleContent = gradleContent.replace(/var path = .*/g, `val path = "${process.env.KEY_PATH}"`);
-        gradleContent = gradleContent.replace(/var storePassword = .*/g, `val storePassword = "${process.env.STORE_PASS}"`);
-        gradleContent = gradleContent.replace(/var keyAlias = .*/g, `val keyAlias = "${process.env.KEY_PASS}"`);
-        gradleContent = gradleContent.replace(/var keyPassword = .*/g, `val keyPassword = "${process.env.KEY_ALIAS}"`);
+        gradleContent = gradleContent.replace(/var path = .*/g, `var path = "${process.env.KEY_PATH}"`);
+        gradleContent = gradleContent.replace(/var storePassword = .*/g, `var storePassword = "${process.env.STORE_PASS}"`);
+        gradleContent = gradleContent.replace(/var keyAlias = .*/g, `var keyAlias = "${process.env.KEY_PASS}"`);
+        gradleContent = gradleContent.replace(/var keyPassword = .*/g, `var keyPassword = "${process.env.KEY_ALIAS}"`);
 
         fs.writeFileSync(gradlePath, gradleContent, 'utf8');
     }
