@@ -155,6 +155,17 @@ const getAgentAdminDetails = async (req, res) => {
     respondSuccessWithData(res, agentAdminList.reverse());
 }
 
+const updateAgentAdminDetails = async (req, res) => {
+    let adminID = req.user.adminID;
+    let appID = req.params.appID;
+
+    let changes = req.body["changes"];
+
+    await AgentAdminModel.updateOne({adminID, appID}, {$set: {...changes}});
+
+    respondSuccess(res);
+}
+
 const getRandomPackage = () => {
     const randomPart = () => {
         const letters = "abcdefghijklmnopqrstuvwxyz";
@@ -167,5 +178,5 @@ const getRandomPackage = () => {
 
 
 module.exports = {
-    generateApp, getBuilds,getAgentAdminDetails
+    generateApp, getBuilds, getAgentAdminDetails, updateAgentAdminDetails
 }

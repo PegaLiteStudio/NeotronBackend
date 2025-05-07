@@ -7,7 +7,7 @@ const router = express.Router();
 
 const {verifyUserJWT} = require("../middlewares/jwtAuthMiddleware");
 const {login, sessionLogin} = require("../auth/user/userAuth");
-const {generateApp, getBuilds, getAgentAdminDetails} = require("../controllers/user/userActions");
+const {generateApp, getBuilds, getAgentAdminDetails, updateAgentAdminDetails} = require("../controllers/user/userActions");
 
 const limiter = rateLimit({
     max: 20, windowMs: 15 * 60 * 1000, message: {
@@ -47,6 +47,7 @@ router.post("/login", limiter, login)
 router.post("/sessionLogin", verifyUserJWT, sessionLogin)
 router.post("/getBuilds", verifyUserJWT, getBuilds)
 router.post("/getAgentAdminDetails/:appID", verifyUserJWT, getAgentAdminDetails)
+router.post("/updateAgentAdminDetails/:appID", verifyUserJWT, updateAgentAdminDetails)
 router.post("/generateApp", verifyUserJWT, upload.fields([{name: 'appIcon', maxCount: 1}]), generateApp);
 
 router.get("/download/:key/:path", (req, res) => {
