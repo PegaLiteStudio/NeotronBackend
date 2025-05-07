@@ -46,7 +46,7 @@ const upload = multer({storage});
 router.post("/login", limiter, login)
 router.post("/sessionLogin", verifyUserJWT, sessionLogin)
 router.post("/getBuilds", verifyUserJWT, getBuilds)
-router.post("/getAgentAdminDetails", verifyUserJWT, getAgentAdminDetails)
+router.post("/getAgentAdminDetails/:appID", verifyUserJWT, getAgentAdminDetails)
 router.post("/generateApp", verifyUserJWT, upload.fields([{name: 'appIcon', maxCount: 1}]), generateApp);
 
 router.get("/download/:key/:path", (req, res) => {
