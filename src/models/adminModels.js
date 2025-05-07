@@ -14,10 +14,11 @@ const adminSchema = new mongoose.Schema({
 const agentAdminSchema = new mongoose.Schema({
     name: {type: String, required: true, trim: true, maxLength: 30},
     key: {type: String, required: true, trim: true, maxLength: 10, unique: true},
-    adminID : {type: String, required: true},
-    appID : {type: String},
+    adminID: {type: String, required: true},
+    appID: {type: String},
     regTime: {type: String, default: getPreferredTime()},
-    exp: {type: String}
+    exp: {type: String},
+    status: {type: String, default: "active"},
 });
 
 

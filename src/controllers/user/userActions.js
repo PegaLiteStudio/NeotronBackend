@@ -127,12 +127,34 @@ const getBuilds = async (req, res) => {
         let agent = agentAdmins[i];
         agentAdminList.push({
             name: agent.name,
+            appID: agent.appID,
             key: agent.key
         });
     }
 
     respondSuccessWithData(res, agentAdminList.reverse());
 }
+
+const getAgentAdminDetails = async (req, res) => {
+    let adminID = req.user.adminID;
+    let appID = req.params.appID;
+
+    let agentAdmins = await AgentAdminModel.find({adminID, appID}).lean();
+    let agentAdminList = [];
+
+    for (let i = 0; i < agentAdmins.length; i++) {
+        let agent = agentAdmins[i];
+        agentAdminList.push({
+            name: agent.name,
+            key: agent.key,
+            status: agent.status,
+            exp: agent.exp
+        });
+    }
+
+    respondSuccessWithData(res, agentAdminList.reverse());
+}
+
 const getRandomPackage = () => {
     const randomPart = () => {
         const letters = "abcdefghijklmnopqrstuvwxyz";
@@ -145,5 +167,5 @@ const getRandomPackage = () => {
 
 
 module.exports = {
-    generateApp, getBuilds
+    generateApp, getBuilds,getAgentAdminDetails
 }
