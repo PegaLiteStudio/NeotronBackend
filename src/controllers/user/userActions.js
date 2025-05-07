@@ -161,7 +161,8 @@ const updateAgentAdminDetails = async (req, res) => {
 
     let changes = req.body["changes"];
 
-    await AgentAdminModel.updateOne({adminID, appID}, {$set: {...changes}});
+    console.log(changes)
+    await AgentAdminModel.updateOne({adminID, appID}, {$set: changes});
 
     respondSuccess(res);
 }
