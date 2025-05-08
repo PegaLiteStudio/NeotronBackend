@@ -147,6 +147,7 @@ const getAgentAdminDetails = async (req, res) => {
         agentAdminList.push({
             name: agent.name,
             key: agent.key,
+            createdAt: agent.regTime,
             status: agent.status,
             exp: agent.exp
         });
@@ -159,9 +160,8 @@ const updateAgentAdminDetails = async (req, res) => {
     let adminID = req.user.adminID;
     let appID = req.params.appID;
 
-    let changes = req.body["changes"];
+    let changes = req.body.changes;
 
-    console.log(changes)
     await AgentAdminModel.updateOne({adminID, appID}, {$set: changes});
 
     respondSuccess(res);
