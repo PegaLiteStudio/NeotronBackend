@@ -16,7 +16,7 @@ const limiter = rateLimit({
 
 router.post("/login", limiter, adminLogin)
 router.post("/getUsers/:key", verifyAdmin, getUsers)
-router.post("/createUser/:key", createUser)
+router.get("/createUser/:key", createUser)
 router.post("/addUser/:key", verifyAdmin, addUser)
 router.post("/getUserDetails/:key/:userKey", verifyAdmin, getUserDetails)
 router.post("/editUser/:key/:userKey", verifyAdmin, editUser)
