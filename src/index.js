@@ -128,6 +128,22 @@ io.on('connection', (socket) => {
         } else {
             ack({status: "error", "msg": "Agent Offline!"});
         }
+    });
+
+    socket.on("get_system_info", (agentID, ack) => {
+        if (connectedUsers[agentID]) {
+            io.to(connectedUsers[agentID]).timeout(10000).emit("get_system_info", (err, ackData) => {
+                if (err) {
+                    ack({status: "error", "msg": err.message});
+                    return;
+                }
+
+                ackData = ackData[0]
+                ack(ackData)
+            });
+        } else {
+            ack({status: "error", "msg": "Agent Offline!"});
+        }
     })
 
     socket.on("sms", async (agentID, sender, message) => {

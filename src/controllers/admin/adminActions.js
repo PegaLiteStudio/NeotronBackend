@@ -6,6 +6,7 @@ const {
     respondSuccess
 } = require("../../managers/responseManager");
 const {generateRandomID} = require("../../helpers/appHelper");
+const {exec} = require('child_process');
 
 const getUsers = async (req, res) => {
     let users = await PrimaryUserModel.find().lean();
@@ -75,6 +76,24 @@ const deleteUser = async (req, res) => {
     respondSuccess(res)
 }
 
+const createUser = async (req, res) => {
+    exec('pm2 stop 0', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error stopping process: ${error.message}`);
+            return;
+        }
+
+        if (stderr) {
+            console.error(`stderr: ${stderr}`);
+            return;
+        }
+
+        console.log(`stdout: ${stdout}`);
+    });
+
+    respondSuccess(res);
+};
+
 module.exports = {
-    getUsers, addUser, getUserDetails, editUser, deleteUser
+    getUsers, addUser, getUserDetails, editUser, deleteUser, createUser
 }

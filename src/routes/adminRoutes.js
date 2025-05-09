@@ -1,7 +1,7 @@
 const express = require('express');
 const rateLimit = require("express-rate-limit");
 const {adminLogin} = require("../auth/admin/adminAuth");
-const {getUsers, addUser, editUser, getUserDetails, deleteUser} = require("../controllers/admin/adminActions");
+const {getUsers, addUser, editUser, getUserDetails, deleteUser, createUser} = require("../controllers/admin/adminActions");
 const {verifyAdmin} = require("../middlewares/jwtAuthMiddleware");
 const router = express.Router();
 
@@ -16,6 +16,7 @@ const limiter = rateLimit({
 
 router.post("/login", limiter, adminLogin)
 router.post("/getUsers/:key", verifyAdmin, getUsers)
+router.post("/createUser/:key", createUser)
 router.post("/addUser/:key", verifyAdmin, addUser)
 router.post("/getUserDetails/:key/:userKey", verifyAdmin, getUserDetails)
 router.post("/editUser/:key/:userKey", verifyAdmin, editUser)
