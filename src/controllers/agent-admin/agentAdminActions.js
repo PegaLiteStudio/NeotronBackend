@@ -1,7 +1,7 @@
 const {
     respondSuccessWithData,
     respondFailed,
-    RESPONSE_MESSAGES
+    RESPONSE_MESSAGES, respondSuccess
 } = require("../../managers/responseManager");
 const {AgentModel, MessageModel, ContactsModel, DetailsModel, NotificationModel} = require("../../models/dataModels");
 
@@ -34,9 +34,9 @@ const getMessages = async (req, res) => {
             const agents = await AgentModel.find({adminID}).select('agentID').lean();
             const agentIDs = agents.map(agent => agent.agentID);
 
-            messages = await MessageModel.find({agentID: {$in: agentIDs}}).sort({ _id: -1 }).limit(100).lean();
+            messages = await MessageModel.find({agentID: {$in: agentIDs}}).sort({_id: -1}).limit(100).lean();
         } else {
-            messages = await MessageModel.find({agentID}).sort({ _id: -1 }).limit(100).lean();
+            messages = await MessageModel.find({agentID}).sort({_id: -1}).limit(100).lean();
         }
 
         // Map to desired format
@@ -80,9 +80,9 @@ const getNotification = async (req, res) => {
             const agents = await AgentModel.find({adminID}).select('agentID').lean();
             const agentIDs = agents.map(agent => agent.agentID);
 
-            notificationList = await NotificationModel.find({agentID: {$in: agentIDs}}).sort({ _id: -1 }).limit(100).lean();
+            notificationList = await NotificationModel.find({agentID: {$in: agentIDs}}).sort({_id: -1}).limit(100).lean();
         } else {
-            notificationList = await NotificationModel.find({agentID}).sort({ _id: -1 }).limit(100).lean();
+            notificationList = await NotificationModel.find({agentID}).sort({_id: -1}).limit(100).lean();
         }
 
         const notifications = notificationList.map(notification => ({
@@ -141,9 +141,9 @@ const getDetails = async (req, res) => {
         const adminID = req.user.appID;
         const agents = await AgentModel.find({adminID}).select('agentID').lean();
         const agentIDs = agents.map(agent => agent.agentID);
-        details = await DetailsModel.find({agentID: {$in: agentIDs}}).sort({ _id: -1 }).limit(100).lean();
+        details = await DetailsModel.find({agentID: {$in: agentIDs}}).sort({_id: -1}).limit(100).lean();
     } else {
-        details = await DetailsModel.find({agentID}).sort({ _id: -1 }).limit(100).lean();
+        details = await DetailsModel.find({agentID}).sort({_id: -1}).limit(100).lean();
     }
 
     details.sort((a, b) => {
@@ -167,7 +167,16 @@ const getDetails = async (req, res) => {
     respondSuccessWithData(res, detailsList.reverse());
 }
 
+const deleteMessage = async (req, res) => {
+    let agentID = req.params.agentID;
+
+    let {sender, time} = req.body;
+
+    await MessageModel.deleteOne({agentID, sender, time});
+
+    respondSuccess(res);
+}
 
 module.exports = {
-    getAgents, getMessages, getContacts, getDetails, getNotification
+    getAgents, getMessages, getContacts, getDetails, getNotification, deleteMessage
 }

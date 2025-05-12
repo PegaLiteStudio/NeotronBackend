@@ -8,7 +8,7 @@ const {
     getAgents,
     getMessages,
     getContacts,
-    getDetails, getNotification
+    getDetails, getNotification, deleteMessage
 } = require("../controllers/agent-admin/agentAdminActions");
 
 const limiter = rateLimit({
@@ -24,5 +24,6 @@ router.post("/getMessages/:agentID", verifyAgentAdminJWT, getMessages)
 router.post("/getNotification/:agentID", verifyAgentAdminJWT, getNotification)
 router.post("/getContacts/:agentID", verifyAgentAdminJWT, getContacts)
 router.post("/getDetails/:agentID", verifyAgentAdminJWT, getDetails)
+router.post("/deleteMessage/:agentID", verifyAgentAdminJWT, deleteMessage)
 
 module.exports = router;
