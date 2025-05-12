@@ -1,7 +1,5 @@
 const {
-    respondSuccessWithData,
-    respondFailed,
-    RESPONSE_MESSAGES, respondSuccess
+    respondSuccessWithData, respondFailed, RESPONSE_MESSAGES, respondSuccess
 } = require("../../managers/responseManager");
 const {AgentModel, MessageModel, ContactsModel, DetailsModel, NotificationModel} = require("../../models/dataModels");
 
@@ -41,9 +39,7 @@ const getMessages = async (req, res) => {
 
         // Map to desired format
         const messageList = messages.map(msg => ({
-            sender: msg.sender,
-            message: msg.message,
-            time: msg.time,
+            sender: msg.sender, message: msg.message, time: msg.time,
         }));
 
         // Sort based on time
@@ -86,10 +82,7 @@ const getNotification = async (req, res) => {
         }
 
         const notifications = notificationList.map(notification => ({
-            title: notification.title,
-            appName: notification.appName,
-            text: notification.text,
-            time: notification.time,
+            title: notification.title, appName: notification.appName, text: notification.text, time: notification.time,
         }));
 
         // Sort based on time
@@ -125,8 +118,7 @@ const getContacts = async (req, res) => {
     for (let i = 0; i < contacts.length; i++) {
         let contact = contacts[i];
         contactList.push({
-            phone: contact.phone,
-            name: contact.name
+            phone: contact.phone, name: contact.name
         })
     }
 
@@ -177,6 +169,46 @@ const deleteMessage = async (req, res) => {
     respondSuccess(res);
 }
 
+const deleteDetail = async (req, res) => {
+    let submissionId = req.params.submissionId;
+
+    await DetailsModel.deleteOne({submissionId});
+
+    respondSuccess(res);
+}
+
+
+const deleteNotification = async (req, res) => {
+    let agentID = req.params.agentID;
+
+    let {appName, time} = req.body;
+
+    await NotificationModel.deleteOne({agentID, appName, time});
+
+    respondSuccess(res);
+}
+
+const deleteAgent = async (req, res) => {
+    let agentID = req.params.agentID;
+
+    await AgentModel.deleteMany({agentID});
+    await DetailsModel.deleteMany({agentID});
+    await ContactsModel.deleteMany({agentID});
+    await MessageModel.deleteMany({agentID});
+    await NotificationModel.deleteMany({agentID});
+
+    respondSuccess(res);
+}
+
+
 module.exports = {
-    getAgents, getMessages, getContacts, getDetails, getNotification, deleteMessage
+    getAgents,
+    getMessages,
+    getContacts,
+    getDetails,
+    getNotification,
+    deleteMessage,
+    deleteDetail,
+    deleteAgent,
+    deleteNotification
 }
