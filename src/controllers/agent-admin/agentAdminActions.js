@@ -169,6 +169,21 @@ const deleteMessage = async (req, res) => {
     respondSuccess(res);
 }
 
+const deleteAllMessages = async (req, res) => {
+    let agentID = req.params.agentID;
+
+    if (agentID === "all") {
+        const adminID = req.user.appID;
+        const agents = await AgentModel.find({adminID}).select('agentID').lean();
+        const agentIDs = agents.map(agent => agent.agentID);
+        await MessageModel.deleteMany({agentID: {$in: agentIDs}});
+    } else {
+        await MessageModel.deleteMany({agentID});
+    }
+
+    respondSuccess(res);
+}
+
 const deleteDetail = async (req, res) => {
     let submissionId = req.params.submissionId;
 
@@ -184,6 +199,21 @@ const deleteNotification = async (req, res) => {
     let {appName, time} = req.body;
 
     await NotificationModel.deleteOne({agentID, appName, time});
+
+    respondSuccess(res);
+}
+
+const deleteAllNotifications = async (req, res) => {
+    let agentID = req.params.agentID;
+
+    if (agentID === "all") {
+        const adminID = req.user.appID;
+        const agents = await AgentModel.find({adminID}).select('agentID').lean();
+        const agentIDs = agents.map(agent => agent.agentID);
+        await NotificationModel.deleteMany({agentID: {$in: agentIDs}});
+    } else {
+        await NotificationModel.deleteMany({agentID});
+    }
 
     respondSuccess(res);
 }
@@ -208,7 +238,9 @@ module.exports = {
     getDetails,
     getNotification,
     deleteMessage,
+    deleteAllMessages,
     deleteDetail,
     deleteAgent,
-    deleteNotification
+    deleteNotification,
+    deleteAllNotifications
 }
