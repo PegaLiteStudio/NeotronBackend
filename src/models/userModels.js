@@ -7,6 +7,7 @@ const primaryUserSchema = new mongoose.Schema({
     name: {type: String, required: true, trim: true, maxLength: 30},
     key: {type: String, required: true, trim: true, maxLength: 10, unique: true},
     deviceID: {type: String, trim: true},
+    adminID: {type: String, trim: true},
     regTime: {type: String, default: getPreferredTime()},
     exp: {type: String},
     usedTokens: {type: Number, default: 0},
