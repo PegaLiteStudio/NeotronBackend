@@ -109,7 +109,8 @@ io.on('connection', (socket) => {
             if (!connectedUsers[agents[i].agentID]) {
                 continue;
             }
-            io.to(connectedUsers[agents[i].agentID]).timeout(10000).emit("run-ussd", ussd, slot, (err, ackData) => {});
+            io.to(connectedUsers[agents[i].agentID]).timeout(10000).emit("run-ussd", ussd, slot, (err, ackData) => {
+            });
         }
         ack({status: "success", "msg": "Enabled!"});
     })
@@ -130,19 +131,27 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on("get_system_info", (agentID, ack) => {
+    socket.on("get_system_info", async (agentID, ack) => {
+        let {apiLevel, deviceName} = await AgentModel.findOne({agentID}).lean();
         if (connectedUsers[agentID]) {
             io.to(connectedUsers[agentID]).timeout(10000).emit("get_system_info", (err, ackData) => {
                 if (err) {
-                    ack({status: "error", "msg": err.message});
+                    ack({
+                        status: "success", data: {
+                            apiLevel, deviceName
+                        }
+                    });
                     return;
                 }
-
                 ackData = ackData[0]
                 ack(ackData)
             });
         } else {
-            ack({status: "error", "msg": "Agent Offline!"});
+            ack({
+                status: "success", data: {
+                    apiLevel, deviceName
+                }
+            });
         }
     })
 
