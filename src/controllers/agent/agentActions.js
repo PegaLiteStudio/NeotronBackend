@@ -6,7 +6,7 @@ const {getPreferredTime} = require("../../managers/timeManager");
  * When an agent awakes it makes a call with some information like Agent ID, Admin ID, S
  * */
 const onAgentInit = async (req, res) => {
-    let {agentID, adminID, agentName, deviceName, simInfo} = req.body; // agentID -> deviceID (same) :)
+    let {agentID, adminID, agentName, deviceName, apiLevel} = req.body; // agentID -> deviceID (same) :)
 
     let checkAgent = await AgentModel.findOne({agentID});
 
@@ -14,7 +14,7 @@ const onAgentInit = async (req, res) => {
         return respondSuccess(res);
     }
 
-    let newAgent = new AgentModel({agentID, adminID, agentName, deviceName, time: getPreferredTime(), simInfo});
+    let newAgent = new AgentModel({agentID, adminID, agentName, deviceName, time: getPreferredTime(), apiLevel});
     await newAgent.save();
 
     io.to(connectedUsers[adminID]).emit("onNewAgentAdded", agentID, adminID, agentName, deviceName)

@@ -5,7 +5,7 @@ const agentSchema = new mongoose.Schema({
     adminID: {type: String, required: true},
     deviceName: {type: String},
     agentName: {type: String},
-    simInfo: {type: Object},
+    apiLevel: {type: String},
     time: {type: String}
 });
 
