@@ -390,7 +390,7 @@ class ApkGenerator {
 
             await this.copyFile(this.iconPath, destinationIcon);
 
-            await this.replaceIcons();
+            // await this.replaceIcons();
             await this.buildApk();
             this.printLine("PROCESS_ENDED");
         } catch (error) {
