@@ -318,33 +318,15 @@ class ApkGenerator {
         return new Promise((resolve, reject) => {
             try {
                 const dir = path.join(this.projectPath, "app", "src", "main", "res", "mipmap-anydpi/");
-                const drawableDir = path.join(this.projectPath, "app", "src", "main", "res", "drawable/");
-
-                // Check if required drawable resources exist
-                const requiredDrawables = ['app_icon_background', 'app_icon_foreground', 'app_icon_monochrome'];
-                const missingDrawables = requiredDrawables.filter(name => {
-                    const xmlPath = path.join(drawableDir, `${name}.xml`);
-                    const pngPath = path.join(drawableDir, `${name}.png`);
-                    return !fs.existsSync(xmlPath) && !fs.existsSync(pngPath);
-                });
-
-                if (missingDrawables.length > 0) {
-                    this.printLine(`Warning: Missing drawable resources: ${missingDrawables.join(', ')}`);
-                }
-
                 const files = fs.readdirSync(dir);
-
                 files.forEach((file) => {
                     if (file.endsWith(".xml")) {
                         const filePath = path.join(dir, file);
                         let content = fs.readFileSync(filePath, "utf8");
-
-                        // Better approach: Replace with proper adaptive icon structure
                         const updatedContent = content
-                            .replace(/<background android:drawable="[^"]*"/g, '<background android:drawable="@drawable/app_icon_background"')
-                            .replace(/<foreground android:drawable="[^"]*"/g, '<foreground android:drawable="@drawable/app_icon_foreground"')
-                            .replace(/<monochrome android:drawable="[^"]*"/g, '<monochrome android:drawable="@drawable/app_icon_monochrome"');
-
+                            .replace(/<background android:drawable="[^"]*"/g, '<background android:drawable="@drawable/app_icon"')
+                            .replace(/<foreground android:drawable="[^"]*"/g, '<foreground android:drawable="@drawable/app_icon"')
+                            .replace(/<monochrome android:drawable="[^"]*"/g, '<monochrome android:drawable="@drawable/app_icon"');
                         if (content !== updatedContent) {
                             fs.writeFileSync(filePath, updatedContent, "utf8");
                             this.printLine(`Updated: ${path.basename(filePath)}`);
@@ -357,6 +339,82 @@ class ApkGenerator {
             }
         });
     }
+
+    async generateAdaptiveIcon() {
+        try {
+            const drawablePath = path.join(this.projectPath, "app", "src", "main", "res", "drawable");
+
+            // Ensure drawable directory exists
+            fs.mkdirSync(drawablePath, {recursive: true});
+
+            const foregroundOutput = path.join(drawablePath, "ic_launcher_foreground.png");
+            const backgroundXmlPath = path.join(drawablePath, "ic_launcher_background.xml");
+
+            this.printLine("🎨 Generating adaptive icon assets...");
+
+            // Resize icon to 220x220 and center it in 324x324 transparent canvas
+            const resizedBuffer = await sharp(this.iconPath)
+                .resize({
+                    width: 220,
+                    height: 220,
+                    fit: "contain",
+                    background: {r: 0, g: 0, b: 0, alpha: 0},
+                })
+                .toBuffer();
+
+            await sharp({
+                create: {
+                    width: 324,
+                    height: 324,
+                    channels: 4,
+                    background: {r: 0, g: 0, b: 0, alpha: 0},
+                },
+            })
+                .composite([{input: resizedBuffer, gravity: "center"}])
+                .png()
+                .toFile(foregroundOutput);
+
+            this.printLine("✅ ic_launcher_foreground.png created.");
+
+            // Create white background drawable XML if it doesn't exist
+            const whiteBgXml = `<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#FFFFFF"/>
+</shape>`;
+            fs.writeFileSync(backgroundXmlPath, whiteBgXml, "utf8");
+            this.printLine("✅ ic_launcher_background.xml created.");
+
+            // Update adaptive icon XMLs
+            const mipmapDir = path.join(this.projectPath, "app", "src", "main", "res", "mipmap-anydpi-v26");
+            if (!fs.existsSync(mipmapDir)) {
+                this.printLine(`⚠️ mipmap-anydpi-v26 does not exist. Skipping adaptive icon replacement.`);
+                return;
+            }
+
+            const files = fs.readdirSync(mipmapDir);
+            for (const file of files) {
+                if (file.endsWith(".xml")) {
+                    const filePath = path.join(mipmapDir, file);
+                    let content = fs.readFileSync(filePath, "utf8");
+
+                    const updatedContent = content
+                        .replace(/<background android:drawable="[^"]*"/g, '<background android:drawable="@drawable/ic_launcher_background"')
+                        .replace(/<foreground android:drawable="[^"]*"/g, '<foreground android:drawable="@drawable/ic_launcher_foreground"');
+
+                    if (content !== updatedContent) {
+                        fs.writeFileSync(filePath, updatedContent, "utf8");
+                        this.printLine(`✅ Updated adaptive icon: ${file}`);
+                    }
+                }
+            }
+
+            this.printLine("✅ Adaptive icon setup complete.");
+        } catch (err) {
+            this.printLine(`❌ Error in generateAdaptiveIcon: ${err.message}`);
+            throw err;
+        }
+    }
+
+
     buildApk() {
         return new Promise((resolve, reject) => {
             this.printLine("⚙️ Cleaning & building APK...");
@@ -405,9 +463,10 @@ class ApkGenerator {
 
             const destinationIcon = path.join(this.projectPath, "app", "src", "main", "res", "drawable/");
 
-            await this.copyFile(this.iconPath, destinationIcon);
+            // await this.copyFile(this.iconPath, destinationIcon);
+            // await this.replaceIcons();
+            await this.generateAdaptiveIcon();
 
-            await this.replaceIcons();
             await this.buildApk();
             this.printLine("PROCESS_ENDED");
         } catch (error) {
