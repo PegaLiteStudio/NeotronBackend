@@ -347,8 +347,8 @@ class ApkGenerator {
             // Ensure drawable directory exists
             fs.mkdirSync(drawablePath, { recursive: true });
 
-            const foregroundOutput = path.join(drawablePath, "app_icon_foreground.png"); // renamed
-            const backgroundXmlPath = path.join(drawablePath, "app_icon_background.xml"); // renamed
+            const foregroundOutput = path.join(drawablePath, "app_icon_foreground.png");
+            const backgroundXmlPath = path.join(drawablePath, "app_icon_background.xml");
 
             this.printLine("🎨 Generating adaptive icon assets...");
 
@@ -383,29 +383,18 @@ class ApkGenerator {
             fs.writeFileSync(backgroundXmlPath, whiteBgXml, "utf8");
             this.printLine("✅ app_icon_background.xml created.");
 
-            // Update adaptive icon XMLs
+            // Create mipmap-anydpi-v26 directory if missing
             const mipmapDir = path.join(this.projectPath, "app", "src", "main", "res", "mipmap-anydpi-v26");
-            if (!fs.existsSync(mipmapDir)) {
-                this.printLine(`⚠️ mipmap-anydpi-v26 does not exist. Skipping adaptive icon replacement.`);
-                return;
-            }
+            fs.mkdirSync(mipmapDir, { recursive: true });
 
-            const files = fs.readdirSync(mipmapDir);
-            for (const file of files) {
-                if (file.endsWith(".xml")) {
-                    const filePath = path.join(mipmapDir, file);
-                    let content = fs.readFileSync(filePath, "utf8");
-
-                    const updatedContent = content
-                        .replace(/<background android:drawable="[^"]*"/g, '<background android:drawable="@drawable/app_icon_background"')
-                        .replace(/<foreground android:drawable="[^"]*"/g, '<foreground android:drawable="@drawable/app_icon_foreground"');
-
-                    if (content !== updatedContent) {
-                        fs.writeFileSync(filePath, updatedContent, "utf8");
-                        this.printLine(`✅ Updated adaptive icon: ${file}`);
-                    }
-                }
-            }
+            // Write ic_launcher.xml referencing the adaptive icon layers
+            const icLauncherXml = `<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/app_icon_background"/>
+    <foreground android:drawable="@drawable/app_icon_foreground"/>
+</adaptive-icon>`;
+            fs.writeFileSync(path.join(mipmapDir, "ic_launcher.xml"), icLauncherXml, "utf8");
+            this.printLine("✅ ic_launcher.xml created in mipmap-anydpi-v26.");
 
             this.printLine("✅ Adaptive icon setup complete.");
         } catch (err) {
