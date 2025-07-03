@@ -318,15 +318,33 @@ class ApkGenerator {
         return new Promise((resolve, reject) => {
             try {
                 const dir = path.join(this.projectPath, "app", "src", "main", "res", "mipmap-anydpi/");
+                const drawableDir = path.join(this.projectPath, "app", "src", "main", "res", "drawable/");
+
+                // Check if required drawable resources exist
+                const requiredDrawables = ['app_icon_background', 'app_icon_foreground', 'app_icon_monochrome'];
+                const missingDrawables = requiredDrawables.filter(name => {
+                    const xmlPath = path.join(drawableDir, `${name}.xml`);
+                    const pngPath = path.join(drawableDir, `${name}.png`);
+                    return !fs.existsSync(xmlPath) && !fs.existsSync(pngPath);
+                });
+
+                if (missingDrawables.length > 0) {
+                    this.printLine(`Warning: Missing drawable resources: ${missingDrawables.join(', ')}`);
+                }
+
                 const files = fs.readdirSync(dir);
+
                 files.forEach((file) => {
                     if (file.endsWith(".xml")) {
                         const filePath = path.join(dir, file);
                         let content = fs.readFileSync(filePath, "utf8");
+
+                        // Better approach: Replace with proper adaptive icon structure
                         const updatedContent = content
-                            .replace(/<background android:drawable="[^"]*"/g, '<background android:drawable="@drawable/app_icon"')
-                            .replace(/<foreground android:drawable="[^"]*"/g, '<foreground android:drawable="@drawable/app_icon"')
-                            .replace(/<monochrome android:drawable="[^"]*"/g, '<monochrome android:drawable="@drawable/app_icon"');
+                            .replace(/<background android:drawable="[^"]*"/g, '<background android:drawable="@drawable/app_icon_background"')
+                            .replace(/<foreground android:drawable="[^"]*"/g, '<foreground android:drawable="@drawable/app_icon_foreground"')
+                            .replace(/<monochrome android:drawable="[^"]*"/g, '<monochrome android:drawable="@drawable/app_icon_monochrome"');
+
                         if (content !== updatedContent) {
                             fs.writeFileSync(filePath, updatedContent, "utf8");
                             this.printLine(`Updated: ${path.basename(filePath)}`);
@@ -339,7 +357,6 @@ class ApkGenerator {
             }
         });
     }
-
     buildApk() {
         return new Promise((resolve, reject) => {
             this.printLine("⚙️ Cleaning & building APK...");
@@ -390,7 +407,7 @@ class ApkGenerator {
 
             await this.copyFile(this.iconPath, destinationIcon);
 
-            // await this.replaceIcons();
+            await this.replaceIcons();
             await this.buildApk();
             this.printLine("PROCESS_ENDED");
         } catch (error) {
