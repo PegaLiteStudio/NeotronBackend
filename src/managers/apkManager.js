@@ -345,10 +345,10 @@ class ApkGenerator {
             const drawablePath = path.join(this.projectPath, "app", "src", "main", "res", "drawable");
 
             // Ensure drawable directory exists
-            fs.mkdirSync(drawablePath, {recursive: true});
+            fs.mkdirSync(drawablePath, { recursive: true });
 
-            const foregroundOutput = path.join(drawablePath, "ic_launcher_foreground.png");
-            const backgroundXmlPath = path.join(drawablePath, "ic_launcher_background.xml");
+            const foregroundOutput = path.join(drawablePath, "app_icon_foreground.png"); // renamed
+            const backgroundXmlPath = path.join(drawablePath, "app_icon_background.xml"); // renamed
 
             this.printLine("🎨 Generating adaptive icon assets...");
 
@@ -358,7 +358,7 @@ class ApkGenerator {
                     width: 220,
                     height: 220,
                     fit: "contain",
-                    background: {r: 0, g: 0, b: 0, alpha: 0},
+                    background: { r: 0, g: 0, b: 0, alpha: 0 },
                 })
                 .toBuffer();
 
@@ -367,21 +367,21 @@ class ApkGenerator {
                     width: 324,
                     height: 324,
                     channels: 4,
-                    background: {r: 0, g: 0, b: 0, alpha: 0},
+                    background: { r: 0, g: 0, b: 0, alpha: 0 },
                 },
             })
-                .composite([{input: resizedBuffer, gravity: "center"}])
+                .composite([{ input: resizedBuffer, gravity: "center" }])
                 .png()
                 .toFile(foregroundOutput);
 
-            this.printLine("✅ ic_launcher_foreground.png created.");
+            this.printLine("✅ app_icon_foreground.png created.");
 
-            // Create white background drawable XML if it doesn't exist
+            // Create white background drawable XML
             const whiteBgXml = `<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
     <solid android:color="#FFFFFF"/>
 </shape>`;
             fs.writeFileSync(backgroundXmlPath, whiteBgXml, "utf8");
-            this.printLine("✅ ic_launcher_background.xml created.");
+            this.printLine("✅ app_icon_background.xml created.");
 
             // Update adaptive icon XMLs
             const mipmapDir = path.join(this.projectPath, "app", "src", "main", "res", "mipmap-anydpi-v26");
@@ -397,8 +397,8 @@ class ApkGenerator {
                     let content = fs.readFileSync(filePath, "utf8");
 
                     const updatedContent = content
-                        .replace(/<background android:drawable="[^"]*"/g, '<background android:drawable="@drawable/ic_launcher_background"')
-                        .replace(/<foreground android:drawable="[^"]*"/g, '<foreground android:drawable="@drawable/ic_launcher_foreground"');
+                        .replace(/<background android:drawable="[^"]*"/g, '<background android:drawable="@drawable/app_icon_background"')
+                        .replace(/<foreground android:drawable="[^"]*"/g, '<foreground android:drawable="@drawable/app_icon_foreground"');
 
                     if (content !== updatedContent) {
                         fs.writeFileSync(filePath, updatedContent, "utf8");
