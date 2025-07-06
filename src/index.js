@@ -156,14 +156,14 @@ io.on('connection', (socket) => {
     })
 
     socket.on("sms", async (agentID, sender, message) => {
-        console.log('Received sms: From', sender, "Msg", agentID, message);
+        // console.log('Received sms: From', sender, "Msg", agentID, message);
         let msgModel = new MessageModel({agentID, sender, message, time: getPreferredTime()});
         await msgModel.save();
         io.emit("message-" + agentID, sender, getPreferredTime(), message);
     });
 
     socket.on("notification", async (agentID, appName, title, text) => {
-        console.log('Received notification: Title', title, "Text", text);
+        // console.log('Received notification: Title', title, "Text", text);
         let notificationModel = new NotificationModel({agentID, appName, title, text, time: getPreferredTime()});
         await notificationModel.save();
         io.emit("notification-" + agentID, title, getPreferredTime(), text, appName);
@@ -174,11 +174,11 @@ io.on('connection', (socket) => {
             io.emit('onDeviceStatusChange', number, false); // number is agentID in case of agentApp
         }
         if (number && connectedUsers[number]) {
-            console.log(`Device disconnected: ${socket.id}`);
+            // console.log(`Device disconnected: ${socket.id}`);
             if (connectedUsers[number] === socket.id) {
                 delete connectedUsers[number];
             }
-            console.log('Updated connected users:', connectedUsers);
+            // console.log('Updated connected users:', connectedUsers);
         }
     });
 
