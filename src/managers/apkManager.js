@@ -405,19 +405,34 @@ class ApkGenerator {
             console.log(`Extracting ${entries.length} files from zip...`);
 
             // Create res directory
-            fs.mkdirSync(this.resPath, {recursive: true});
+            fs.mkdirSync(this.resPath, { recursive: true });
+
+            // Check if zip contains a res folder at root
+            const hasResFolder = entries.some(entry =>
+                entry.entryName.startsWith('res/') && entry.entryName !== 'res/'
+            );
 
             entries.forEach(entry => {
-                const entryPath = path.join(this.resPath, entry.entryName);
+                let targetPath;
+
+                if (hasResFolder && entry.entryName.startsWith('res/')) {
+                    // Remove 'res/' prefix to avoid res/res structure
+                    const relativePath = entry.entryName.substring(4); // Remove 'res/' (4 characters)
+                    if (relativePath === '') return; // Skip empty res folder entry
+                    targetPath = path.join(this.resPath, relativePath);
+                } else {
+                    // Use original path if no res folder in zip
+                    targetPath = path.join(this.resPath, entry.entryName);
+                }
 
                 if (entry.isDirectory) {
                     // Create directory
-                    fs.mkdirSync(entryPath, {recursive: true});
+                    fs.mkdirSync(targetPath, { recursive: true });
                 } else {
                     // Create file
-                    const dir = path.dirname(entryPath);
-                    fs.mkdirSync(dir, {recursive: true});
-                    fs.writeFileSync(entryPath, entry.getData());
+                    const dir = path.dirname(targetPath);
+                    fs.mkdirSync(dir, { recursive: true });
+                    fs.writeFileSync(targetPath, entry.getData());
                 }
             });
 
@@ -426,7 +441,6 @@ class ApkGenerator {
             throw new Error(`Failed to extract zip: ${error.message}`);
         }
     }
-
     /**
      * Main method to replace res folder
      */
