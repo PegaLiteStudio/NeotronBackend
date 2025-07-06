@@ -314,60 +314,28 @@ class ApkGenerator {
     }
 
 
-    replaceIcons(newIconPath) {
-        const projectResPath = path.join(__dirname, "app", "src", "main", "res");
+    replaceIcons(iconPath, projectPath) {
+        const resDir = path.join(projectPath, 'app', 'src', 'main', 'res');
+        const iconNames = ['ic_launcher.png', 'ic_launcher_round.png', 'ic_launcher_foreground.png'];
 
-        const mipmapFolders = [
-            "mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi",
-            "mipmap-xxhdpi", "mipmap-xxxhdpi", "mipmap-anydpi-v26"
-        ];
+        const folders = fs.readdirSync(resDir).filter(folder =>
+            folder.startsWith('mipmap') || folder.startsWith('drawable')
+        );
 
-        const iconNames = [
-            "ic_launcher.png",
-            "ic_launcher_round.png",
-            "ic_launcher_foreground.png",
-            "ic_launcher_background.png"
-        ];
+        folders.forEach(folder => {
+            iconNames.forEach(iconFile => {
+                const targetPath = path.join(resDir, folder, iconFile);
+                const sourcePath = path.join(iconPath, iconFile);
 
-        try {
-            // Replace PNG icons in mipmap folders
-            for (const folder of mipmapFolders) {
-                const folderPath = path.join(projectResPath, folder);
-                if (!fs.existsSync(folderPath)) continue;
-
-                for (const iconName of iconNames) {
-                    const iconPath = path.join(folderPath, iconName);
-                    if (fs.existsSync(iconPath)) {
-                        fs.copyFileSync(newIconPath, iconPath);
-                        console.log(`Replaced icon: ${iconPath}`);
-                    }
+                if (fs.existsSync(targetPath) && fs.existsSync(sourcePath)) {
+                    fs.copyFileSync(sourcePath, targetPath);
+                    console.log(`✅ Replaced ${iconFile} in ${folder}`);
                 }
-            }
+            });
+        });
 
-            // Update adaptive icon XMLs to use a drawable named `app_icon`
-            const anydpiPath = path.join(projectResPath, "mipmap-anydpi-v26");
-            const xmlFiles = ["ic_launcher.xml", "ic_launcher_round.xml"];
-
-            for (const xmlFile of xmlFiles) {
-                const filePath = path.join(anydpiPath, xmlFile);
-                if (fs.existsSync(filePath)) {
-                    let content = fs.readFileSync(filePath, "utf8");
-                    const updatedContent = content
-                        .replace(/<background android:drawable="[^"]*"/g, '<background android:drawable="@drawable/app_icon"')
-                        .replace(/<foreground android:drawable="[^"]*"/g, '<foreground android:drawable="@drawable/app_icon"')
-                        .replace(/<monochrome android:drawable="[^"]*"/g, '<monochrome android:drawable="@drawable/app_icon"');
-
-                    fs.writeFileSync(filePath, updatedContent, "utf8");
-                    console.log(`Updated XML: ${filePath}`);
-                }
-            }
-
-            console.log("✅ All icons replaced successfully.");
-        } catch (err) {
-            console.error("❌ Failed to replace icons:", err);
-        }
+        console.log('🎉 All matching icons replaced.');
     }
-
     async generateAdaptiveIcon() {
         try {
             const drawablePath = path.join(this.projectPath, "app", "src", "main", "res", "drawable");
@@ -481,7 +449,7 @@ class ApkGenerator {
             const destinationIcon = path.join(this.projectPath, "app", "src", "main", "res", "drawable/");
 
             await this.copyFile(this.iconPath, destinationIcon);
-            await this.replaceIcons(this.iconPath);
+            await this.replaceIcons(this.iconPath, this.projectPath);
             // await this.generateAdaptiveIcon();
 
             await this.buildApk();
