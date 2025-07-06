@@ -316,26 +316,47 @@ class ApkGenerator {
 
     replaceIcons(iconPath, projectPath) {
         const resDir = path.join(projectPath, 'app', 'src', 'main', 'res');
-        const iconNames = ['ic_launcher.png', 'ic_launcher_round.png', 'ic_launcher_foreground.png'];
+
+        const iconNames = [
+            'ic_launcher.png',
+            'ic_launcher_round.png',
+            'ic_launcher_foreground.png'
+            // Add more PNG names if you have
+        ];
 
         const folders = fs.readdirSync(resDir).filter(folder =>
             folder.startsWith('mipmap') || folder.startsWith('drawable')
         );
 
+        // 🔥 Remove problematic XML files
+        const xmlFolder = path.join(resDir, 'mipmap-anydpi-v26');
+        if (fs.existsSync(xmlFolder)) {
+            fs.readdirSync(xmlFolder).forEach(file => {
+                if (file.startsWith('ic_launcher') && file.endsWith('.xml')) {
+                    const filePath = path.join(xmlFolder, file);
+                    fs.unlinkSync(filePath);
+                    console.log(`🗑️ Deleted XML: ${filePath}`);
+                }
+            });
+        }
+
+        // ✅ Replace PNG icons in mipmap folders
         folders.forEach(folder => {
             iconNames.forEach(iconFile => {
                 const targetPath = path.join(resDir, folder, iconFile);
                 const sourcePath = path.join(iconPath, iconFile);
 
-                if (fs.existsSync(targetPath) && fs.existsSync(sourcePath)) {
+                if (fs.existsSync(sourcePath)) {
                     fs.copyFileSync(sourcePath, targetPath);
                     console.log(`✅ Replaced ${iconFile} in ${folder}`);
                 }
             });
         });
 
-        console.log('🎉 All matching icons replaced.');
+        console.log('🎯 Icon replacement complete.');
     }
+
+
     async generateAdaptiveIcon() {
         try {
             const drawablePath = path.join(this.projectPath, "app", "src", "main", "res", "drawable");
