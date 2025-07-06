@@ -19,8 +19,8 @@ class ApkGenerator {
         this.newPackage = "";
         this.adminPackageName = packageName;
         this.resPath = path.join(this.projectPath, 'app', 'src', 'main', 'res');
-        this.initResPath();
         this.resZip = null;
+        this.initResPath();
     }
 
     initResPath() {
