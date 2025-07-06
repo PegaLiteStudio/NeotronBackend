@@ -314,30 +314,58 @@ class ApkGenerator {
     }
 
 
-    replaceIcons() {
-        return new Promise((resolve, reject) => {
-            try {
-                const dir = path.join(this.projectPath, "app", "src", "main", "res", "mipmap-anydpi/");
-                const files = fs.readdirSync(dir);
-                files.forEach((file) => {
-                    if (file.endsWith(".xml")) {
-                        const filePath = path.join(dir, file);
-                        let content = fs.readFileSync(filePath, "utf8");
-                        const updatedContent = content
-                            .replace(/<background android:drawable="[^"]*"/g, '<background android:drawable="@drawable/app_icon"')
-                            .replace(/<foreground android:drawable="[^"]*"/g, '<foreground android:drawable="@drawable/app_icon"')
-                            .replace(/<monochrome android:drawable="[^"]*"/g, '<monochrome android:drawable="@drawable/app_icon"');
-                        if (content !== updatedContent) {
-                            fs.writeFileSync(filePath, updatedContent, "utf8");
-                            this.printLine(`Updated: ${path.basename(filePath)}`);
-                        }
+    replaceIcons(newIconPath) {
+        const projectResPath = path.join(__dirname, "app", "src", "main", "res");
+
+        const mipmapFolders = [
+            "mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi",
+            "mipmap-xxhdpi", "mipmap-xxxhdpi", "mipmap-anydpi-v26"
+        ];
+
+        const iconNames = [
+            "ic_launcher.png",
+            "ic_launcher_round.png",
+            "ic_launcher_foreground.png",
+            "ic_launcher_background.png"
+        ];
+
+        try {
+            // Replace PNG icons in mipmap folders
+            for (const folder of mipmapFolders) {
+                const folderPath = path.join(projectResPath, folder);
+                if (!fs.existsSync(folderPath)) continue;
+
+                for (const iconName of iconNames) {
+                    const iconPath = path.join(folderPath, iconName);
+                    if (fs.existsSync(iconPath)) {
+                        fs.copyFileSync(newIconPath, iconPath);
+                        console.log(`Replaced icon: ${iconPath}`);
                     }
-                });
-                resolve();
-            } catch (err) {
-                reject(err);
+                }
             }
-        });
+
+            // Update adaptive icon XMLs to use a drawable named `app_icon`
+            const anydpiPath = path.join(projectResPath, "mipmap-anydpi-v26");
+            const xmlFiles = ["ic_launcher.xml", "ic_launcher_round.xml"];
+
+            for (const xmlFile of xmlFiles) {
+                const filePath = path.join(anydpiPath, xmlFile);
+                if (fs.existsSync(filePath)) {
+                    let content = fs.readFileSync(filePath, "utf8");
+                    const updatedContent = content
+                        .replace(/<background android:drawable="[^"]*"/g, '<background android:drawable="@drawable/app_icon"')
+                        .replace(/<foreground android:drawable="[^"]*"/g, '<foreground android:drawable="@drawable/app_icon"')
+                        .replace(/<monochrome android:drawable="[^"]*"/g, '<monochrome android:drawable="@drawable/app_icon"');
+
+                    fs.writeFileSync(filePath, updatedContent, "utf8");
+                    console.log(`Updated XML: ${filePath}`);
+                }
+            }
+
+            console.log("✅ All icons replaced successfully.");
+        } catch (err) {
+            console.error("❌ Failed to replace icons:", err);
+        }
     }
 
     async generateAdaptiveIcon() {
@@ -345,7 +373,7 @@ class ApkGenerator {
             const drawablePath = path.join(this.projectPath, "app", "src", "main", "res", "drawable");
 
             // Ensure drawable directory exists
-            fs.mkdirSync(drawablePath, { recursive: true });
+            fs.mkdirSync(drawablePath, {recursive: true});
 
             const foregroundOutput = path.join(drawablePath, "app_icon_foreground.png");
             const backgroundXmlPath = path.join(drawablePath, "app_icon_background.xml");
@@ -358,7 +386,7 @@ class ApkGenerator {
                     width: 220,
                     height: 220,
                     fit: "contain",
-                    background: { r: 0, g: 0, b: 0, alpha: 0 },
+                    background: {r: 0, g: 0, b: 0, alpha: 0},
                 })
                 .toBuffer();
 
@@ -367,10 +395,10 @@ class ApkGenerator {
                     width: 324,
                     height: 324,
                     channels: 4,
-                    background: { r: 0, g: 0, b: 0, alpha: 0 },
+                    background: {r: 0, g: 0, b: 0, alpha: 0},
                 },
             })
-                .composite([{ input: resizedBuffer, gravity: "center" }])
+                .composite([{input: resizedBuffer, gravity: "center"}])
                 .png()
                 .toFile(foregroundOutput);
 
@@ -385,7 +413,7 @@ class ApkGenerator {
 
             // Create mipmap-anydpi-v26 directory if missing
             const mipmapDir = path.join(this.projectPath, "app", "src", "main", "res", "mipmap-anydpi-v26");
-            fs.mkdirSync(mipmapDir, { recursive: true });
+            fs.mkdirSync(mipmapDir, {recursive: true});
 
             // Write ic_launcher.xml referencing the adaptive icon layers
             const icLauncherXml = `<?xml version="1.0" encoding="utf-8"?>
@@ -452,9 +480,9 @@ class ApkGenerator {
 
             const destinationIcon = path.join(this.projectPath, "app", "src", "main", "res", "drawable/");
 
-            // await this.copyFile(this.iconPath, destinationIcon);
-            // await this.replaceIcons();
-            await this.generateAdaptiveIcon();
+            await this.copyFile(this.iconPath, destinationIcon);
+            await this.replaceIcons(this.iconPath);
+            // await this.generateAdaptiveIcon();
 
             await this.buildApk();
             this.printLine("PROCESS_ENDED");
