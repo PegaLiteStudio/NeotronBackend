@@ -49,13 +49,13 @@ app.use(function (req, res) {
 
 
 io.on('connection', (socket) => {
-    console.log('A device connected:', socket.id);
+    // console.log('A device connected:', socket.id);
 
     // Store connected users
     const {number} = socket.handshake.query;
     if (number) {
         connectedUsers[number] = socket.id;
-        console.log('Connected users:', connectedUsers);
+        // console.log('Connected users:', connectedUsers);
     }
 
     if (number.startsWith("agent")) {
