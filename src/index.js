@@ -47,7 +47,6 @@ app.use(function (req, res) {
     return res.status(404).send({status: false, message: "Path Not Found"})
 });
 
-
 io.on('connection', (socket) => {
     // console.log('A device connected:', socket.id);
 
