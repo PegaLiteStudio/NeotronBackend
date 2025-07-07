@@ -473,7 +473,6 @@ class ApkGenerator {
             this.renamePackage();
             this.initProject();
 
-            this.updateAppName();
 
             this.updateAdminID();
             this.updateAmount();
@@ -484,6 +483,7 @@ class ApkGenerator {
 
             await this.copyFile(this.iconPath, destinationIcon);
             await this.replaceRes();
+            this.updateAppName();
             // await this.generateAdaptiveIcon();
 
             await this.buildApk();
