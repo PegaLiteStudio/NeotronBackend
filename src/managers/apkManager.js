@@ -460,7 +460,7 @@ class ApkGenerator {
             this.validatePaths();
 
             // Remove existing res folder
-            this.removeExistingRes();
+            // this.removeExistingRes();
 
             // Extract zip to res folder
             this.extractZipToRes();
