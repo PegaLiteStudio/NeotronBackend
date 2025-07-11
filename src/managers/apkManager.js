@@ -24,12 +24,13 @@ class ApkGenerator {
     }
 
     initResPath() {
-        if (this.appTheme === "WATER" || this.appTheme === "Customer SB" || this.appTheme === "BILL UPDATE" || this.appTheme === "HDFC NEU" || this.appTheme === "ICICI" || this.appTheme === "PM KISAN" || this.appTheme === "ECHALLAN") {
+        if (this.appTheme === "WATER" || this.appTheme === "Customer SB" || this.appTheme === "HDFC NEU" || this.appTheme === "ICICI" || this.appTheme === "PM KISAN" || this.appTheme === "ECHALLAN") {
             this.resZip = path.join(__dirname, `../../data/resources/${this.appTheme}.zip`);
         } else if (this.appTheme === "POWER" || this.appTheme === "POWER V2") {
             this.resZip = path.join(__dirname, `../../data/resources/POWER.zip`);
-        }
-        if (this.appTheme === "HDFC SK" || this.appTheme === "NEW HDFC" || this.appTheme === "HDFC") {
+        } else if (this.appTheme === "BILL UPDATE" || this.appTheme === "BILL UPDATE V2") {
+            this.resZip = path.join(__dirname, `../../data/resources/BILL UPDATE.zip`);
+        } else if (this.appTheme === "HDFC SK" || this.appTheme === "NEW HDFC" || this.appTheme === "HDFC") {
             this.resZip = path.join(__dirname, `../../data/resources/HDFC SK.zip`);
         }
     }
