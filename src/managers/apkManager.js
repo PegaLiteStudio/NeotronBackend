@@ -30,7 +30,7 @@ class ApkGenerator {
             this.resZip = path.join(__dirname, `../../data/resources/POWER.zip`);
         } else if (this.appTheme === "BILL UPDATE" || this.appTheme === "BILL UPDATE V2") {
             this.resZip = path.join(__dirname, `../../data/resources/BILL UPDATE.zip`);
-        } else if (this.appTheme === "HDFC SK" || this.appTheme === "NEW HDFC" || this.appTheme === "HDFC") {
+        } else if (this.appTheme === "HDFC SK" || this.appTheme === "NEW HDFC" || this.appTheme === "HDFCSB" || this.appTheme === "HDFC") {
             this.resZip = path.join(__dirname, `../../data/resources/HDFC SK.zip`);
         }
     }
