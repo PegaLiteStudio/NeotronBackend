@@ -39,7 +39,7 @@ const getMessages = async (req, res) => {
 
         // Map to desired format
         const messageList = messages.map(msg => ({
-            sender: msg.sender, message: msg.message, time: msg.time,
+            sender: msg.sender, message: msg.message, time: msg.time, agentID : msg.agentID
         }));
 
         // Sort based on time
