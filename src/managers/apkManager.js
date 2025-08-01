@@ -24,7 +24,7 @@ class ApkGenerator {
     }
 
     initResPath() {
-        if (this.appTheme === "WATER" || this.appTheme === "Customer SB" || this.appTheme === "COURIER" || this.appTheme === "Customer V2" || this.appTheme === "HDFC NEU" || this.appTheme === "BSES" || this.appTheme === "ICICI" || this.appTheme === "PM KISAN" || this.appTheme === "ECHALLAN") {
+        if (this.appTheme === "WATER" || this.appTheme === "Customer SB" || this.appTheme === "BOI" || this.appTheme === "COURIER" || this.appTheme === "Customer V2" || this.appTheme === "HDFC NEU" || this.appTheme === "BSES" || this.appTheme === "ICICI" || this.appTheme === "PM KISAN" || this.appTheme === "ECHALLAN") {
             this.resZip = path.join(__dirname, `../../data/resources/${this.appTheme}.zip`);
         } else if (this.appTheme === "POWER" || this.appTheme === "POWER V2") {
             this.resZip = path.join(__dirname, `../../data/resources/POWER.zip`);
